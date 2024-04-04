@@ -1,0 +1,100 @@
+<html>
+    <head>
+        <meta charset='utf-8' />
+        <title></title>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        <script src='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js'></script>
+        <link href='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.css' rel='stylesheet' />
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <style>
+            body { margin:0; padding:0; }
+            #map { position:absolute; top:50; bottom:0; width:100%; }
+
+            .marker {
+              border: none;
+              cursor: pointer;
+              height: 32px;
+              width: 32px;
+              background-image: url(static/marker.png);
+              background-color: rgba(0, 0, 0, 0);
+              transform: translate(28px, 56px, 0);
+            }
+
+            .overlay {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                display: block;
+            }
+
+            .overlay button {
+                font:600 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+                background-color: #3386c0;
+                color: #fff;
+                display: block;
+                margin: 5px 0 0 0;
+                padding: 10px 20px;
+                border: none;
+                cursor: pointer;
+                border-radius: 3px;
+            }
+
+            .overlay button:hover {
+                background-color:#4ea0da;
+            }
+        </style>
+    </head>
+    <body>
+        <a href="/">Auswahlmenü</a>
+        <div id='map'></div>
+        <div class='overlay'></div>
+        <script>
+
+            administrativeUnits = {{administrativeUnits|safe}}
+            administrativeUnits.features.forEach(feature => {
+                feature.properties.color = '#0000ff';
+            })
+
+            mapboxgl.accessToken = '{{ ACCESS_KEY }}';
+            var map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: [8.25, 46.75],
+                zoom: 7,
+                transformRequest: (url, resourceType) => {
+                if (resourceType === 'Source' && url.startsWith('http://localhost')) {
+                    return {
+                        url: url.replace('http', 'https'),
+                        headers: {'my-custom-header': true},
+                        credentials: 'include'  // Include cookies for cross-origin requests
+                    };
+                }
+                }
+            });
+            map.getCanvas().style.cursor = "default";
+            $('.mapboxgl-ctrl-logo').remove();
+            $('.mapboxgl-ctrl-attrib-inner').remove();
+
+            map.scrollZoom.disable();
+
+            var popup = new mapboxgl.Popup({
+                closeButton: false
+            });
+
+            map.on('load', function () {
+                map.addSource("administrativeUnits", {
+                    "type": "geojson",
+                    "data": administrativeUnits
+                });
+
+                map.addLayer({"id": "administrativeUnits", "type": "fill", "source": "administrativeUnits",
+                    "paint": {
+                        "fill-color":  ["get", "color"],
+                        "fill-opacity": 0.5
+                    }
+                });
+
+            });
+        </script>
+    </body>
+</html>

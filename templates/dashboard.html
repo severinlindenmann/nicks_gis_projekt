@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Geodaten-Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.cdnfonts.com/css/d-din" rel="stylesheet">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.css' rel='stylesheet' />
+    <!-- Mapbox GL Draw JS und CSS hinzufügen -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.js'></script>
+    <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.css' type='text/css'/>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <!-- <link rel="icon" href="/favicon.png" type="image/png"> -->
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/d-din');
+    </style>
+</head>
+<body>
+    <header>
+        <div id="dashboard-name">Geo-Dashboard Nick</div>
+
+        <nav>
+            <ul id="menu">
+                <li><a href="#" data-map="topology">Topology</a></li>
+                <li><a href="#" data-map="knn">KNN</a></li>
+                <li><a href="#" data-map="point-in-polygon">Point-in-Polygon</a></li>
+                <li><a href="#" data-map="point-line">Point-Line</a></li>
+                <li><a href="#" data-map="point-poly-point">Point-Poly-Point</a></li>
+                <li><a href="#" data-map="point-in-box">Point-in-Box</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    
+    <main>
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
+        <div id="side-panel">
+            <!------- TOPOLOGY ------->
+            <div id="topology-container" style="display:block;">
+                <h2>Topology</h2>
+                <p>Bitte See auswählen:</p>
+                <select id="lake-select">
+                    <option value="">Wählen...</option>
+                    
+                </select>
+            
+                <p>Bitte Kanton auswählen:</p>
+                <select id="canton-select">
+                    <option value="">Wählen...</option>
+                    
+                </select>
+            
+                <p>Ist der See im ausgewählten Kanton? <br><span id="intersection-response" class="response-style"></span></p>
+            </div>
+        
+            <!---------- KNN ---------->
+            <div id="knn-container" style="display:none;">
+                <h2>K-Nearest Neighbors</h2>
+                
+                <label for="hospital-range">Anzahl der nächsten Spitäler: </label>
+                <input type="range" id="hospital-range" min="1" max="10" value="1">
+                <span id="range-value">1</span>
+            
+                <!-- Neuer Bereich für die Liste der ausgewählten Spitäler -->
+                <div id="selected-hospitals-list">
+                <!-- Die Liste der Spitäler wird hier dynamisch eingefügt -->
+                </div>
+            </div>
+            
+
+            <!---------- Point-in-Polygon ---------->
+            <div id="point-in-polygon-container" style="display:none;">
+                <h2>Point-in-Polygon</h2>
+                
+                <div id="details-container">
+                    <!-- Kantonsdetails werden hier eingefügt -->
+                </div>
+                
+                <div id="legend" class="legend">
+                    <h4>Legende</h4>
+                    <div id="legend-items"></div>
+                    <!-- Legende wird hier eingefügt -->
+                </div>
+            </div>
+        
+
+            <!---------- Point-Line ---------->
+            <div id="point-line-container" style="display:none;">
+                <h2>Point-Line</h2>
+                <label for="distance-input">Max. Entfernung zwischen Spital und Fluss eingeben:</label></br></br>
+                <input type="number" id="distance-input" placeholder="Eingabe [in m]">
+                <button id="find-hospitals">Spitäler suchen</button>
+                <div id="hospital-count-pl-container">
+                    <p>Anzahl gefundener Spitäler: <span id="hospital-count-pl"><b>0</b></span></p>
+                </div>
+            </div>
+        
+
+            <!---------- Point-Poly-Point ---------->
+            <div id="point-poly-point-container" style="display:none;">
+                <h2>Point-Poly-Point</h2>
+                <label for="distance-to-station-input">Max. Entfernung zwischen Spital und ÖV-Haltestelle [in m]:</label></br>
+                <input type="number" id="distance-to-station-input" placeholder="Eingabe in Meter"></br></br>
+                <label for="distance-to-lake-input">Max. Entfernung zwischen Spital und See [in m]:</label></br>
+                <input type="number" id="distance-to-lake-input" placeholder="Eingabe in Meter"></br></br>
+                <button id="find-hospitals-ppp">Spitäler suchen</button>
+                <div id="hospital-count-ppp-container">
+                    <p>Anzahl gefundener Spitäler: <span id="hospital-count-ppp">0</span></p>
+                </div>
+            </div>
+                   
+        
+
+            <!---------- Point-in-Box ---------->
+            <div id="point-in-box-container" style="display:none;">
+                <h2>Point in Box</h2>
+                <div id="selected-hospitals-info">Wähle mit der Auswahlfunktion einen Bereich aus.</div>
+
+            </div>
+        
+        </div>
+
+    </main>
+    <script>
+      
+        // alles in script.js definiert
+
+    </script>
+</body>
+</html>
