@@ -1,24 +1,25 @@
 import os
 import psycopg2
 import psycopg2.extras
-import geojson
 from flask import Flask, request, render_template, jsonify
-# from flask_cors import CORS
 import json
-from contextlib import closing
-
 
 app = Flask(__name__, static_folder = 'static')
 # CORS(app)
 app.config.from_object(__name__)
-app.config.from_pyfile('settings.py', silent=False)
+# app.config.from_pyfile('settings.py', silent=False)
+
+app.config['MAPBOX_ACCESS_KEY'] = os.environ.get('MAPBOX_ACCESS_KEY')
+app.config['DB_USER'] = os.environ.get('DB_USER')
+app.config['DB_PASSWORD'] = os.environ.get('DB_PASSWORD')
+app.config['DB_HOST'] = os.environ.get('DB_HOST', 'db.qgiscloud.com')
+app.config['DB_PORT'] = os.environ.get('DB_PORT', '5432')
+app.config['DB_NAME'] = os.environ.get('DB_NAME')
 
 # Setzen des Debug-Modus basierend auf der FLASK_DEBUG Umgebungsvariable
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', '0') == '1'
 
 MAPBOX_ACCESS_KEY = app.config['MAPBOX_ACCESS_KEY']
-
-
 
 connection = psycopg2.connect(user=app.config["DB_USER"],
                               password=app.config["DB_PASSWORD"],
