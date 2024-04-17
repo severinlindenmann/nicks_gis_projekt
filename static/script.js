@@ -137,12 +137,14 @@ function makePointInBoxLayersVisible() {
     // Überprüfen und Sichtbarkeit von 'hospitals-layer' ändern
     if (map.getLayer('all-hospitals-layer')) {
         map.setLayoutProperty('all-hospitals-layer', 'visibility', 'visible');
-        console.log("bin visible all-hospitals-layer")
     }
     // Überprüfen und Sichtbarkeit von 'highlighted-hospitals-layer' ändern
     if (map.getLayer('highlighted-hospitals-layer')) {
         map.setLayoutProperty('highlighted-hospitals-layer', 'visibility', 'visible');
-        console.log("bin visible highlighted-hospitals-layer")
+    }
+    // Sichtbarkeit des Layers 'voronoi-layer' ändern, falls vorhanden
+    if (map.getLayer('voronoi-layer')) {
+        map.setLayoutProperty('voronoi-layer', 'visibility', 'visible');
     }
 }
 
@@ -155,8 +157,11 @@ function makePointInBoxLayersInvisible() {
     if (map.getLayer('highlighted-hospitals-layer')) {
         map.setLayoutProperty('highlighted-hospitals-layer', 'visibility', 'none');
     }
+    // Sichtbarkeit des Layers 'voronoi-layer' ändern, falls vorhanden
+    if (map.getLayer('voronoi-layer')) {
+        map.setLayoutProperty('voronoi-layer', 'visibility', 'none');
+    }
 }
-
 
 // ------------------ SHOW LEGEND OF CHLOROPLETH MAP ------------------------
 function updateLegend() {
@@ -245,7 +250,6 @@ function loadChloroplethMap() {
                     // Verschiebe den `highlight-border`-Layer an die letzte Stelle
                     map.moveLayer('highlight-border');
                 }
-
 
 
             }).catch(error => {
@@ -899,6 +903,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ======================= POINT-IN-BOX ==========================
 
 
+
     // Funktion, um die Koordinaten des gezeichneten Polygons zu erfassen und an das Backend zu senden
     function sendPolygonData() {
         var data = draw.getAll();
@@ -916,11 +921,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.log('Erfolg:', data);
                     updateSelectedHospitals(data);
 
-                    // Container für die ausgewählten Krankenhäuser leeren
+                    // Container für die ausgewählten Spitäler leeren
                     const hospitalsInfoContainer = document.getElementById('selected-hospitals-info');
-                    hospitalsInfoContainer.innerHTML = 'Ausgewählte Spitäler:<br><br>';
+                    hospitalsInfoContainer.innerHTML = 'Ausgewählte Spitäler: (Anklicken für mehr Infos)<br><br>';
 
-                    // Für jedes Feature (Krankenhaus) ein Element erstellen
+                    // Für jedes Feature (Spitäler) ein Element erstellen
                     data.features.forEach(feature => {
                         const properties = feature.properties;
 
@@ -932,7 +937,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Container für detaillierte Informationen
                         const detailsContainer = document.createElement('div');
                         detailsContainer.classList.add('hospital-details');
-                        detailsContainer.style.display = 'none'; // Standardmäßig verstecken
+                        detailsContainer.style.display = 'none'; // Standardmässig verstecken
 
                         // Detaillierte Informationen hinzufügen
                         const detailsHtml = `
@@ -1035,33 +1040,59 @@ document.addEventListener('DOMContentLoaded', function () {
     map.on('draw.create', sendPolygonData);
     map.on('draw.update', sendPolygonData);
 
+
     map.on('load', function () {
-        // Lade die Krankenhaus-Daten vom Server
-        fetch('/getHospitals')
+        // Zuerst die Voronoi-Polygone laden
+        fetch('/voronoi')
             .then(response => response.json())
             .then(data => {
-                // Füge die Daten als Quelle zur Karte hinzu
-                map.addSource('all-hospitals', {
-                    'type': 'geojson',
-                    'data': data
+                const voronoiGeoJSON = JSON.parse(data.voronoi);
+    
+                // Füge die Voronoi-Quelle und den Layer hinzu
+                map.addSource('voronoi-source', {
+                    type: 'geojson',
+                    data: voronoiGeoJSON
                 });
-
-                // Füge eine neue Ebene hinzu, um die Krankenhäuser als grüne Punkte anzuzeigen
                 map.addLayer({
-                    'id': 'all-hospitals-layer',
-                    'type': 'circle',
-                    'source': 'all-hospitals',
-                    'paint': {
+                    id: 'voronoi-layer',
+                    type: 'line',
+                    source: 'voronoi-source',
+                    layout: {
+                        'visibility': 'none'  // Setze die Sichtbarkeit des Layers auf unsichtbar
+                    },
+                    paint: {
+                        'line-width': 1,
+                        'line-color': '#5e2028',  // Weinrite Linien für Voronoi-Polygone
+                //        'line-dasharray': [2, 10],  // gepunkteten Linie
+                        'line-blur': 1, // leichter Unschärfeeffekt 
+                        'line-opacity': 0.5 
+
+                    }
+                });
+    
+                // Lade nun die Spital-Daten
+                return fetch('/getHospitals');
+            })
+            .then(response => response.json())
+            .then(data => {
+                map.addSource('all-hospitals', {
+                    type: 'geojson',
+                    data: data
+                });
+                map.addLayer({
+                    id: 'all-hospitals-layer',
+                    type: 'circle',
+                    source: 'all-hospitals',
+                    paint: {
                         'circle-radius': 5,
-                        'circle-color': '#000000' // schwarze punkte
+                        'circle-color': '#000000' // Schwarze Punkte für die Spitäler
                     },
                     'layout': {
-                        'visibility': 'none' // Setze diesen Layer initial auf unsichtbar
+                        'visibility': 'none' 
                     }
                 });
             })
-            .catch(error => console.error('Fehler beim Laden der Spitäler:', error));
+            .catch(error => console.error('Fehler beim Laden der Daten:', error));
     });
-
-
+    
 });
